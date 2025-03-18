@@ -9,6 +9,8 @@ pipeline {
     }
     parameters {
         string(name: 'appVersion', defaultValue: '1.0.0', description: 'What is the application version?')
+        string(name: 'ACTION', defaultValue: 'apply', description: 'Specify action: apply or destroy')
+
     }
     environment{
         def appVersion = '' //variable declaration
@@ -41,10 +43,24 @@ pipeline {
         }
 
         stage('Deploy'){
+            when {
+                expression { params.ACTION == 'apply' }
+            }
             steps{
                 sh """
                     cd terraform
                     terraform apply -auto-approve -var="app_version=${params.appVersion}"
+                """
+            }
+        }
+        stage('Destroy'){
+            when {
+                expression { params.ACTION == 'destroy' }
+            }
+            steps{
+                sh """
+                    cd terraform
+                    terraform destroy -auto-approve -var="app_version=${params.appVersion}"
                 """
             }
         }
